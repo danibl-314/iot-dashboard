@@ -1,8 +1,8 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { supabase } from "@/lib/supabaseClient"
-import SensorCard from "@/components/SensorCard"
+import { supabase } from "../lib/supabaseClient"
+import SensorCard from "../components/SensorCard"
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer
 } from "recharts"
