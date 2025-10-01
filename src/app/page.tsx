@@ -7,10 +7,16 @@ import {
   LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, ResponsiveContainer
 } from "recharts"
 
+type Registro = {
+  fecha: string
+  temperatura: number
+  humedad: number | null
+}
+
 export default function Home() {
   const [temperatura, setTemperatura] = useState<number | null>(null)
   const [humedad, setHumedad] = useState<number | null>(null)
-  const [history, setHistory] = useState<any[]>([])
+  const [history, setHistory] = useState<Registro[]>([])
   const [hoverIndex, setHoverIndex] = useState<number | null>(null)
   const [promedioTemp, setPromedioTemp] = useState<number | null>(null)
   const [promedioHum, setPromedioHum] = useState<number | null>(null)
