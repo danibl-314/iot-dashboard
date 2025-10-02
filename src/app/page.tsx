@@ -15,6 +15,7 @@ export default function Home() {
 
   useEffect(() => {
     fetchData()
+
     const interval = setInterval(fetchData, 5000)
     return () => clearInterval(interval)
   }, [])
@@ -37,18 +38,11 @@ export default function Home() {
 
     if (temp.data && hum.data) {
       const merged = temp.data.map((t, i) => ({
-        fechaTemp: new Date(t.created_at).toLocaleTimeString("es-CO", {
-          hour: "2-digit",
-          minute: "2-digit",
-        }),
+        fecha: new Date(t.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit" }),
         temperatura: t.valor,
-        fechaHum: hum.data[i]
-          ? new Date(hum.data[i].created_at).toLocaleTimeString("es-CO", {
-              hour: "2-digit",
-              minute: "2-digit",
-            })
-          : null,
+        horaTemp: new Date(t.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
         humedad: hum.data[i]?.valor ?? null,
+        horaHum: new Date(hum.data[i]?.created_at).toLocaleTimeString("es-CO", { hour: "2-digit", minute: "2-digit", second: "2-digit" })
       }))
       setHistory(merged.reverse())
     }
@@ -56,29 +50,18 @@ export default function Home() {
 
   return (
     <main style={{ padding: "20px", background: "linear-gradient(#17202A, #2C3E50)", minHeight: "100vh" }}>
-      <h1 style={{ color: "#ECF0F1", textAlign: "center", fontSize: "3rem", marginBottom: "30px" }}>
-        📡 Dashboard IoT
-      </h1>
+      <h1 style={{ color: "#ECF0F1", textAlign: "center", marginBottom: "30px", fontSize: "2.5rem" }}>📡 Dashboard IoT</h1>
 
-      {/* Tarjetas */}
       <SensorCard title="🌡 Temperatura" value={temperatura} unit="°C" />
       <SensorCard title="💧 Humedad" value={humedad} unit="%" />
 
-      {/* Gráfica */}
-      <div style={{
-        background: "#1F2A38",
-        borderRadius: "16px",
-        padding: "20px",
-        marginTop: "30px",
-        color: "#ECF0F1",
-        boxShadow: "0 8px 20px rgba(0,0,0,0.3)"
-      }}>
+      <div style={{ background: "#1F2A38", borderRadius: "16px", padding: "20px", marginTop: "30px", color: "#ECF0F1", boxShadow: "0 8px 20px rgba(0,0,0,0.3)" }}>
         <h2 style={{ marginBottom: "15px", color: "#ECF0F1" }}>📊 Historial</h2>
 
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={history}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="fechaTemp" />
+            <XAxis dataKey="fecha" />
             <YAxis />
             <Tooltip />
             <Line type="monotone" dataKey="temperatura" stroke="#e74c3c" strokeWidth={hoverIndex !== null ? 4 : 2} dot />
@@ -98,18 +81,21 @@ export default function Home() {
                 style={{
                   background: hoverIndex === index ? "#576574" : "#2C3E50",
                   borderRadius: "12px",
-                  padding: "10px 15px",
-                  display: "flex",
-                  justifyContent: "space-between",
+                  padding: "12px 18px",
+                  display: "grid",
+                  gridTemplateColumns: "auto auto auto auto",
+                  alignItems: "center",
                   color: "#ECF0F1",
                   fontSize: "14px",
-                  boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.25)",
                   cursor: "pointer",
                   transition: "background 0.2s"
                 }}
               >
-                <span>🌡 {item.temperatura?.toFixed(1)} °C ({item.fechaTemp})</span>
-                <span>💧 {item.humedad?.toFixed(1)} % ({item.fechaHum})</span>
+                <span style={{ color: "#f1c40f", fontWeight: 500 }}>{item.horaTemp}</span>
+                <span style={{ color: "#e74c3c", fontWeight: 600 }}>🌡 {item.temperatura?.toFixed(1)} °C</span>
+                <span style={{ color: "#8e44ad", fontWeight: 500 }}>{item.horaHum}</span>
+                <span style={{ color: "#3498db", fontWeight: 600 }}>💧 {item.humedad?.toFixed(1)} %</span>
               </div>
             ))}
           </div>
