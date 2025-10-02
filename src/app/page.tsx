@@ -20,52 +20,65 @@ export default function Home() {
   }, [])
 
   async function fetchData() {
-    const { data: tempData, error: tempError } = await supabase
+    const temp = await supabase
       .from("temperaturas")
       .select("valor, created_at")
       .order("created_at", { ascending: false })
       .limit(10)
 
-    const { data: humData, error: humError } = await supabase
+    const hum = await supabase
       .from("humedad")
       .select("valor, created_at")
       .order("created_at", { ascending: false })
       .limit(10)
 
-    if (!tempError && tempData?.length) setTemperatura(tempData[0].valor)
-    if (!humError && humData?.length) setHumedad(humData[0].valor)
+    if (!temp.error && temp.data.length > 0) setTemperatura(temp.data[0].valor)
+    if (!hum.error && hum.data.length > 0) setHumedad(hum.data[0].valor)
 
-    if (tempData && humData) {
-      const merged = tempData.map(t => {
-        const h = humData.find(h => h.created_at === t.created_at)
-        return {
-          fecha: new Date(t.created_at).toLocaleTimeString("es-CO", {
-            hour: "2-digit",
-            minute: "2-digit",
-            second: "2-digit"
-          }),
-          temperatura: t.valor,
-          humedad: h?.valor ?? null,
-        }
-      })
-      setHistory(merged.reverse()) // más antiguo a más nuevo
+    if (temp.data && hum.data) {
+      const merged = temp.data.map((t, i) => ({
+        fechaTemp: new Date(t.created_at).toLocaleTimeString("es-CO", {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
+        temperatura: t.valor,
+        fechaHum: hum.data[i]
+          ? new Date(hum.data[i].created_at).toLocaleTimeString("es-CO", {
+              hour: "2-digit",
+              minute: "2-digit",
+            })
+          : null,
+        humedad: hum.data[i]?.valor ?? null,
+      }))
+      setHistory(merged.reverse())
     }
   }
 
   return (
     <main style={{ padding: "20px", background: "linear-gradient(#17202A, #2C3E50)", minHeight: "100vh" }}>
-      <h1 style={{ color: "#ECF0F1", textAlign: "center", marginBottom: "30px", fontSize: "2.5rem" }}>📡 Dashboard IoT</h1>
+      <h1 style={{ color: "#ECF0F1", textAlign: "center", fontSize: "3rem", marginBottom: "30px" }}>
+        📡 Dashboard IoT
+      </h1>
 
+      {/* Tarjetas */}
       <SensorCard title="🌡 Temperatura" value={temperatura} unit="°C" />
       <SensorCard title="💧 Humedad" value={humedad} unit="%" />
 
-      <div style={{ background: "#1F2A38", borderRadius: "16px", padding: "20px", marginTop: "30px", color: "#ECF0F1", boxShadow: "0 8px 20px rgba(0,0,0,0.3)" }}>
+      {/* Gráfica */}
+      <div style={{
+        background: "#1F2A38",
+        borderRadius: "16px",
+        padding: "20px",
+        marginTop: "30px",
+        color: "#ECF0F1",
+        boxShadow: "0 8px 20px rgba(0,0,0,0.3)"
+      }}>
         <h2 style={{ marginBottom: "15px", color: "#ECF0F1" }}>📊 Historial</h2>
 
         <ResponsiveContainer width="100%" height={300}>
           <LineChart data={history}>
             <CartesianGrid strokeDasharray="3 3" />
-            <XAxis dataKey="fecha" />
+            <XAxis dataKey="fechaTemp" />
             <YAxis />
             <Tooltip />
             <Line type="monotone" dataKey="temperatura" stroke="#e74c3c" strokeWidth={hoverIndex !== null ? 4 : 2} dot />
@@ -73,6 +86,7 @@ export default function Home() {
           </LineChart>
         </ResponsiveContainer>
 
+        {/* Mini historial interactivo */}
         <div style={{ marginTop: "20px" }}>
           <h3 style={{ color: "#ECF0F1", marginBottom: "10px" }}>Últimos registros</h3>
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -94,9 +108,8 @@ export default function Home() {
                   transition: "background 0.2s"
                 }}
               >
-                <span>{item.fecha}</span>
-                <span>🌡 {item.temperatura?.toFixed(1)} °C</span>
-                <span>💧 {item.humedad?.toFixed(1)} %</span>
+                <span>🌡 {item.temperatura?.toFixed(1)} °C ({item.fechaTemp})</span>
+                <span>💧 {item.humedad?.toFixed(1)} % ({item.fechaHum})</span>
               </div>
             ))}
           </div>
